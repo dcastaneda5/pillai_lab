@@ -2,7 +2,7 @@
 #Daniel Castaneda Mogollon
 
 #This code reports a summary stats of fastq files, in regards of the length of the sequences, not the
-#quality score.
+#quality score, i.e. mean, median, stdev and number of reads in the files from a folder inputed by the user.
 
 import os
 import statistics
