@@ -32,8 +32,8 @@ Basic stats:
 Basic descriptive statistics was achieved by using the `basic_stats_fastq.py` in the scripts folder.
 
 iqtree (used to construct an unrooted maximum likelihood phylogenetic tree):
-
+```
 iqtree -s <alignment.fasta> -b 1000 -nt AUTO -t -m MFP
-
+```
 
 
