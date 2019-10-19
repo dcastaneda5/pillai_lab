@@ -25,7 +25,11 @@ python graph_plot.py -i <internal_file> -s <sample1_out.swarms> -d 0
 
 RStudio (to perform the wilcoxon test and visualize the significance of the results):
 
-Found in the scripts folder.
+Three R files were used for statistical analysis, which are found in the scripts folder.
+
+Basic stats:
+
+Basic descriptive statistics was achieved by using the `basic_stats_fastq.py` in the scripts folder.
 
 
 
