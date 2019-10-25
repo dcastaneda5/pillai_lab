@@ -1,0 +1,11 @@
+﻿Allele,Method,Calls
+3D7,Deep Sequencing,5
+FC27,Deep Sequencing,5
+K1,Deep Sequencing,3
+MAD20,Deep Sequencing,4
+RO33,Deep Sequencing,3
+3D7,Nested PCR,4
+FC27,Nested PCR,2
+K1,Nested PCR,3
+MAD20,Nested PCR,2
+RO33,Nested PCR,3
