@@ -1,0 +1,70 @@
+library(dada2) 
+packageVersion("dada2")
+
+#Running the dada2 software
+path<-'/Volumes/Seagate/msp_project/fastq_files'
+list.files(path)
+#Getting the forward reads
+fnFs <- sort(list.files(path, pattern="_R1_001.fastq", full.names = TRUE))
+#Getting the reverse reads
+fnRs <- sort(list.files(path, pattern="_R2_001.fastq", full.names = TRUE))
+#Extract sample names, assuming filenames have format: SAMPLENAME_XXX.fastq
+sample.names <- sapply(strsplit(basename(fnFs), "_"), `[`, 1)
+#printing samples, control.
+print(length(fnFs))
+print(length(fnRs))
+#plotQualityProfile(fnFs[1:20])
+#plotQualityProfile(fnRs[1:20])
+#filtering
+filtFs <- file.path(path, "filtered", paste0(sample.names, "_F_filt.fastq.gz"))
+filtRs <- file.path(path, "filtered", paste0(sample.names, "_R_filt.fastq.gz"))
+print(filtFs)
+print(filtRs)
+#Need to establish the maximum expected errors by the PhiX control
+out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs,
+                     maxN=0, maxEE=c(2,3), truncQ=2, rm.phix=TRUE,
+                     compress=TRUE, multithread=TRUE) 
+head(out)
+#Plotting quality profile of the reads
+plotQualityProfile(filtFs[1:20])
+plotQualityProfile(filtRs[1:20])
+#Machine learning algorithm to determine error rate from datasets.
+errF <- learnErrors(nbases = 100000000, filtFs, multithread=TRUE)
+errR <- learnErrors(nbases = 100000000, filtRs, multithread=TRUE)
+#Plotting error frequency
+plotErrors(errF, nominalQ=TRUE)
+plotErrors(errR, nominalQ=TRUE)
+
+derepFs <- derepFastq(filtFs, verbose=TRUE)
+derepRs <- derepFastq(filtRs, verbose=TRUE)
+# Name the derep-class objects by the sample names
+names(derepFs) <- sample.names
+names(derepRs) <- sample.names
+
+print(derepFs)
+
+dadaFs <- dada(derepFs, err=errF, multithread=TRUE)
+dadaRs <- dada(derepRs, err=errR, multithread=TRUE)
+
+mergers <- mergePairs(dadaFs, derepFs, dadaRs, derepRs, verbose=TRUE)
+# Inspect the merger data.frame from the first sample
+mergers[[1]]
+seqtab <- makeSequenceTable(mergers)
+dim(seqtab)
+print(dim(seqtab))
+# Inspect distribution of sequence lengths
+table(nchar(getSequences(seqtab)))
+seqtab.nochim <- removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE, verbose=TRUE)
+dim(seqtab.nochim)
+data.class(seqtab.nochim)
+print(seqtab.nochim[19])
+#Getting the total amount of chimeras during PCR.
+sum(seqtab.nochim)/sum(seqtab)
+
+
+getN <- function(x) sum(getUniques(x))
+track <- cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(mergers, getN), rowSums(seqtab.nochim))
+# If processing a single sample, remove the sapply calls: e.g. replace sapply(dadaFs, getN) with getN(dadaFs)
+colnames(track) <- c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim")
+rownames(track) <- sample.names
+print(track)
